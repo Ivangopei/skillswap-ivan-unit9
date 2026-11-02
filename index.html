@@ -41,6 +41,34 @@
       <div id="skills-grid" class="skills-grid"></div>
     </section>
 
+    <section id="offer" class="matcher">
+      <h2>Offer a Skill</h2>
+      <form id="skill-form" class="skill-form">
+        <label>Title
+          <input type="text" id="skill-title" required>
+        </label>
+        <label>Category
+          <select id="skill-category">
+            <option value="Programming">Programming</option>
+            <option value="Music">Music</option>
+            <option value="Career">Career</option>
+            <option value="Language">Language</option>
+          </select>
+        </label>
+        <label>Price ($/hour)
+          <input type="number" id="skill-price" min="0" value="0" required>
+        </label>
+        <label>Your name
+          <input type="text" id="skill-provider" required>
+        </label>
+        <label>Description
+          <textarea id="skill-description" rows="3" required></textarea>
+        </label>
+        <button type="submit" class="btn">Add Skill</button>
+      </form>
+      <p id="form-message" class="calc-result"></p>
+    </section>
+
     <section id="calculator" class="calculator">
       <h2>Session Cost Calculator</h2>
       <div class="calc-form">

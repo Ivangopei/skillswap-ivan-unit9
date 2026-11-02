@@ -107,3 +107,25 @@ document.getElementById('match-btn').addEventListener('click', () => {
 
 // Load skills from the database when the page opens
 loadSkills();
+
+document.getElementById('skill-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const message = document.getElementById('form-message');
+
+  const newSkill = {
+    title: document.getElementById('skill-title').value.trim(),
+    category: document.getElementById('skill-category').value,
+    price: Number(document.getElementById('skill-price').value),
+    provider: document.getElementById('skill-provider').value.trim(),
+    description: document.getElementById('skill-description').value.trim()
+  };
+
+  try {
+    await window.apiService.createSkill(newSkill);
+    message.textContent = 'Skill added!';
+    event.target.reset();
+    await loadSkills();
+  } catch (error) {
+    message.textContent = 'Could not add skill. Please try again.';
+  }
+});
