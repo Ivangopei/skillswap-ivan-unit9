@@ -1,21 +1,13 @@
-// AI-generated: dummy skill data
+// Used AI for UI code
 
-const skills = [
-  { title: 'Intro to Python', category: 'Programming', price: 15, provider: 'Maya R.',
-    description: 'Learn variables, loops, and functions by building small projects.',
-    details: 'Available weekday evenings in the library. Beginners welcome, bring a laptop.' },
-  { title: 'Web Development', category: 'Programming', price: 20, provider: 'Ivan',
-    description: 'Build your first website with HTML, CSS, and JavaScript.',
-    details: 'Flexible schedule. We will build and publish a small site together.' },
-  { title: 'Guitar Basics', category: 'Music', price: 10, provider: 'Jake T.',
-    description: 'Learn basic chords, strumming patterns, and your first song.',
-    details: 'Weekends in the music building. Guitars available to borrow.' },
-  { title: 'Resume Review', category: 'Career', price: 0, provider: 'Sofia L.',
-    description: 'Get feedback on your resume before applying for internships.',
-    details: 'Free 30-minute sessions. Bring a printed or digital copy.' }
-];
+let skills = [];
+let currentCategory = 'All';
 
 const grid = document.getElementById('skills-grid');
+
+function formatPrice(price) {
+  return price === 0 ? 'Free' : '$' + price + ' / hour';
+}
 
 // Draws a list of skills as cards
 function renderSkills(list) {
@@ -32,10 +24,10 @@ function renderSkills(list) {
     card.innerHTML = `
       <h3>${skill.title}</h3>
       <p class="provider">Taught by ${skill.provider}</p>
-      <p class="price">${skill.price === 0 ? 'Free' : '$' + skill.price + ' / hour'}</p>
+      <p class="price">${formatPrice(skill.price)}</p>
       <p>${skill.description}</p>
       <p class="hint">Click to see more</p>
-      <p class="details">${skill.details}</p>
+      <p class="details">Category: ${skill.category}</p>
     `;
 
     // Click a card to show/hide its details
@@ -51,6 +43,17 @@ function renderSkills(list) {
   });
 }
 
+// Loads skills from the backend API, then shows them
+async function loadSkills() {
+  grid.innerHTML = '<p>Loading skills...</p>';
+  try {
+    skills = await window.apiService.fetchSkills();
+    renderSkills(filterSkillsByCategory(skills, currentCategory));
+  } catch (error) {
+    grid.innerHTML = '<p>Could not load skills. Make sure the backend server is running.</p>';
+  }
+}
+
 // Filter buttons call filterSkillsByCategory and redraw the cards
 const filterButtons = document.querySelectorAll('.filter-btn');
 
@@ -59,14 +62,12 @@ filterButtons.forEach(button => {
     filterButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
 
-    const category = button.dataset.category;
-    renderSkills(filterSkillsByCategory(skills, category));
+    currentCategory = button.dataset.category;
+    renderSkills(filterSkillsByCategory(skills, currentCategory));
   });
 });
 
-// Show all skills when the page loads
-renderSkills(skills);
-
+// Cost calculator uses calculateTotalCost
 document.getElementById('calc-btn').addEventListener('click', () => {
   const rate = Number(document.getElementById('rate-input').value);
   const hours = Number(document.getElementById('hours-input').value);
@@ -75,6 +76,7 @@ document.getElementById('calc-btn').addEventListener('click', () => {
   document.getElementById('calc-result').textContent = `Total cost: $${total.toFixed(2)}`;
 });
 
+// Find My Match uses matchSkillsToUser
 document.getElementById('match-btn').addEventListener('click', () => {
   const userNeeds = {
     category: document.getElementById('match-category').value,
@@ -96,9 +98,34 @@ document.getElementById('match-btn').addEventListener('click', () => {
     card.innerHTML = `
       <h3>${skill.title}</h3>
       <p class="provider">Taught by ${skill.provider}</p>
-      <p class="price">${skill.price === 0 ? 'Free' : '$' + skill.price + ' / hour'}</p>
+      <p class="price">${formatPrice(skill.price)}</p>
       <p>${skill.description}</p>
     `;
     results.appendChild(card);
   });
+});
+
+// Load skills from the database when the page opens
+loadSkills();
+
+document.getElementById('skill-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const message = document.getElementById('form-message');
+
+  const newSkill = {
+    title: document.getElementById('skill-title').value.trim(),
+    category: document.getElementById('skill-category').value,
+    price: Number(document.getElementById('skill-price').value),
+    provider: document.getElementById('skill-provider').value.trim(),
+    description: document.getElementById('skill-description').value.trim()
+  };
+
+  try {
+    await window.apiService.createSkill(newSkill);
+    message.textContent = 'Skill added!';
+    event.target.reset();
+    await loadSkills();
+  } catch (error) {
+    message.textContent = 'Could not add skill. Please try again.';
+  }
 });
